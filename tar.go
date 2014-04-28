@@ -22,7 +22,16 @@ func NewArchive() *TarArchive {
 }
 
 func (this *TarArchive) ArchiveFile(src string, path string, fi os.FileInfo) error {
-	hdr, err := tar.FileInfoHeader(fi, path) //what should replace the path?
+	hdr, err := tar.FileInfoHeader(fi, ``) //what should replace the path?
+	//if file is not a regular file or directory, skip it.
+	switch hdr.Typeflag {
+	case tar.TypeBlock, tar.TypeChar, tar.TypeCont, tar.TypeFifo, tar.TypeGNULongLink,
+		tar.TypeGNULongName, tar.TypeLink, tar.TypeSymlink, tar.TypeXGlobalHeader, tar.TypeXHeader:
+		{
+			return nil
+		}
+	}
+
 	if err != nil {
 		return fmt.Errorf("convert file header error: %v", err)
 	}
@@ -58,8 +67,11 @@ func (this *TarArchive) ArchiveFile(src string, path string, fi os.FileInfo) err
 func TarByte(src string) ([]byte, error) {
 	a := NewArchive()
 	src = filepath.Clean(src)
-
-	err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+	src, err := filepath.EvalSymlinks(src)
+	if err != nil {
+		return nil, fmt.Errorf("can't decide the path: %v", err)
+	}
+	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("walk file error: %v", err)
 		}

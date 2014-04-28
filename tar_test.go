@@ -11,7 +11,7 @@ import (
 )
 
 func Test_tar(te *testing.T) {
-	byt, err := TarByte(`/home/xarch/golang/backup/`)
+	byt, err := TarByte(`../reachtar`)
 	if err != nil {
 		te.Fatal(err)
 	}
