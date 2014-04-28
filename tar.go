@@ -1,4 +1,4 @@
-package tar
+package reachtar
 
 import (
 	"archive/tar"
